@@ -9,6 +9,8 @@ return [
     'dropzone_subtitle' => 'Markdown (.md/.markdown), text (.txt), HTML (.html/.htm) nebo ZIP archivy; vícenásobný výběr povolen',
     'dropzone_browse' => 'Vybrat soubory',
     'dropzone_no_files' => 'Žádné soubory nejsou vybrány',
+    'dropzone_remove_label' => 'Odebrat soubor',
+    'upload_in_progress' => 'Nahrávání probíhá...',
     'dropzone_more_files' => ':name + :count další (:size :unit)',
     'size_unit_kb' => 'KB',
     'hint_max_size' => 'Maximální velikost nahrání: :size MB.',

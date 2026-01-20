@@ -9,6 +9,8 @@ return [
     'dropzone_subtitle' => 'Markdown (.md/.markdown), teks (.txt), HTML (.html/.htm) atau arsip ZIP; pilihan ganda diperbolehkan',
     'dropzone_browse' => 'Pilih berkas',
     'dropzone_no_files' => 'Tidak ada berkas dipilih',
+    'dropzone_remove_label' => 'Hapus file',
+    'upload_in_progress' => 'Mengunggah...',
     'dropzone_more_files' => ':name + :count lainnya (:size :unit)',
     'size_unit_kb' => 'KB',
     'hint_max_size' => 'Ukuran unggahan maksimum: :size MB.',

@@ -9,6 +9,8 @@ return [
     'dropzone_subtitle' => 'Markdown (.md/.markdown), besedilo (.txt), HTML (.html/.htm) ali ZIP arhivi; dovoljena je večkratna izbira',
     'dropzone_browse' => 'Izberi datoteke',
     'dropzone_no_files' => 'Ni izbranih datotek',
+    'dropzone_remove_label' => 'Odstrani datoteko',
+    'upload_in_progress' => 'Nalaganje poteka...',
     'dropzone_more_files' => ':name + :count več (:size :unit)',
     'size_unit_kb' => 'KB',
     'hint_max_size' => 'Največja velikost nalaganja: :size MB.',

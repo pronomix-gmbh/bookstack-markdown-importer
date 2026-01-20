@@ -9,6 +9,8 @@ return [
     'dropzone_subtitle' => 'Markdown (.md/.markdown), teksts (.txt), HTML (.html/.htm) vai ZIP arhīvi; atļauta vairākkārtēja izvēle',
     'dropzone_browse' => 'Izvēlēties failus',
     'dropzone_no_files' => 'Nav izvēlētu failu',
+    'dropzone_remove_label' => 'Noņemt failu',
+    'upload_in_progress' => 'Notiek augšupielāde...',
     'dropzone_more_files' => ':name + :count vēl (:size :unit)',
     'size_unit_kb' => 'KB',
     'hint_max_size' => 'Maksimālais augšupielādes lielums: :size MB.',

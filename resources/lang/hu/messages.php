@@ -9,6 +9,8 @@ return [
     'dropzone_subtitle' => 'Markdown (.md/.markdown), szöveg (.txt), HTML (.html/.htm) vagy ZIP archívumok; többszörös kijelölés engedélyezett',
     'dropzone_browse' => 'Fájlok kiválasztása',
     'dropzone_no_files' => 'Nincs kiválasztott fájl',
+    'dropzone_remove_label' => 'Fájl eltávolítása',
+    'upload_in_progress' => 'Feltöltés folyamatban...',
     'dropzone_more_files' => ':name + :count további (:size :unit)',
     'size_unit_kb' => 'KB',
     'hint_max_size' => 'Maximális feltöltési méret: :size MB.',

@@ -9,6 +9,8 @@ return [
     'dropzone_subtitle' => 'Markdown (.md/.markdown), testua (.txt), HTML (.html/.htm) edo ZIP artxiboak; hautapen aniztuna baimenduta',
     'dropzone_browse' => 'Aukeratu fitxategiak',
     'dropzone_no_files' => 'Ez da fitxategirik hautatu',
+    'dropzone_remove_label' => 'Kendu fitxategia',
+    'upload_in_progress' => 'Kargatzen...',
     'dropzone_more_files' => ':name + :count gehiago (:size :unit)',
     'size_unit_kb' => 'KB',
     'hint_max_size' => 'Igotzeko gehieneko tamaina: :size MB.',

@@ -99,6 +99,7 @@
             padding: 8px 12px;
             border-bottom: 1px solid rgba(0, 0, 0, 0.06);
             font-size: 0.9rem;
+            align-items: center;
         }
 
         .md-file-list li:last-child {
@@ -119,6 +120,27 @@
         .md-file-size {
             color: rgba(0, 0, 0, 0.6);
             white-space: nowrap;
+        }
+
+        .md-file-remove {
+            border: 1px solid rgba(0, 0, 0, 0.15);
+            background: #fff;
+            color: rgba(0, 0, 0, 0.7);
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            cursor: pointer;
+            transition: border-color 160ms ease, color 160ms ease, background 160ms ease;
+        }
+
+        .md-file-remove:hover {
+            border-color: rgba(180, 20, 30, 0.6);
+            color: rgba(180, 20, 30, 0.9);
+            background: rgba(180, 20, 30, 0.08);
         }
 
         .md-import-actions {
@@ -155,6 +177,42 @@
             border-radius: 6px;
             padding: 12px 14px;
         }
+
+        .md-upload-status {
+            margin-top: 12px;
+            padding: 10px 12px;
+            border-radius: 6px;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            background: rgba(0, 0, 0, 0.03);
+        }
+
+        .md-upload-status[hidden] {
+            display: none;
+        }
+
+        .md-upload-bar {
+            position: relative;
+            overflow: hidden;
+            height: 6px;
+            border-radius: 999px;
+            background: rgba(30, 86, 49, 0.12);
+            margin-bottom: 8px;
+        }
+
+        .md-upload-bar::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            transform: translateX(-100%);
+            background: linear-gradient(90deg, rgba(30, 86, 49, 0.2), rgba(30, 86, 49, 0.7), rgba(30, 86, 49, 0.2));
+            animation: md-upload-slide 1.2s ease-in-out infinite;
+        }
+
+        @keyframes md-upload-slide {
+            0% { transform: translateX(-100%); }
+            50% { transform: translateX(0); }
+            100% { transform: translateX(100%); }
+        }
     </style>
 @endpush
 
@@ -187,7 +245,7 @@
                 </div>
             @endif
 
-            <form action="{{ $book->getUrl('/markdown-import') }}" method="POST" enctype="multipart/form-data">
+            <form id="md-import-form" action="{{ $book->getUrl('/markdown-import') }}" method="POST" enctype="multipart/form-data">
                 @csrf
 
                 <div class="md-import-section">
@@ -234,6 +292,11 @@
                     <a href="{{ $book->getUrl() }}" class="button outline">{{ trans('bookstack-markdown-importer::messages.action_cancel') }}</a>
                 </div>
 
+                <div class="md-upload-status" id="md-import-upload-status" hidden>
+                    <div class="md-upload-bar"></div>
+                    <p class="mb-none">{{ trans('bookstack-markdown-importer::messages.upload_in_progress') }}</p>
+                </div>
+
                 <div class="md-import-info">
                     <h4>{{ trans('bookstack-markdown-importer::messages.sidebar_title') }}</h4>
                     <p>{{ trans('bookstack-markdown-importer::messages.sidebar_item_title') }}</p>
@@ -253,6 +316,8 @@
             var input = document.getElementById('markdown-file');
             var list = document.getElementById('md-import-file-list');
             var browse = document.getElementById('md-import-browse');
+            var form = document.getElementById('md-import-form');
+            var uploadStatus = document.getElementById('md-import-upload-status');
 
             if (!dropzone || !input || !list || !browse) {
                 return;
@@ -260,21 +325,32 @@
 
             var strings = {
                 noFiles: @json(trans('bookstack-markdown-importer::messages.dropzone_no_files')),
-                sizeUnit: @json(trans('bookstack-markdown-importer::messages.size_unit_kb'))
+                sizeUnit: @json(trans('bookstack-markdown-importer::messages.size_unit_kb')),
+                removeLabel: @json(trans('bookstack-markdown-importer::messages.dropzone_remove_label'))
             };
 
-            var escapeHtml = function (value) {
-                return String(value)
-                    .replace(/&/g, '&amp;')
-                    .replace(/</g, '&lt;')
-                    .replace(/>/g, '&gt;')
-                    .replace(/"/g, '&quot;')
-                    .replace(/'/g, '&#039;');
+            var files = Array.prototype.slice.call(input.files || []);
+
+            var sameFile = function (left, right) {
+                return left.name === right.name &&
+                    left.size === right.size &&
+                    left.lastModified === right.lastModified;
             };
 
-            var renderFiles = function (files) {
+            var syncInput = function () {
+                if (typeof DataTransfer === 'undefined') {
+                    return;
+                }
+                var dataTransfer = new DataTransfer();
+                files.forEach(function (file) {
+                    dataTransfer.items.add(file);
+                });
+                input.files = dataTransfer.files;
+            };
+
+            var renderFiles = function () {
                 list.innerHTML = '';
-                if (!files || files.length === 0) {
+                if (files.length === 0) {
                     var empty = document.createElement('li');
                     empty.className = 'md-file-empty';
                     empty.textContent = strings.noFiles;
@@ -282,21 +358,45 @@
                     return;
                 }
 
-                Array.prototype.slice.call(files).forEach(function (file) {
+                files.forEach(function (file, index) {
                     var item = document.createElement('li');
                     var name = document.createElement('span');
                     var size = document.createElement('span');
+                    var remove = document.createElement('button');
                     var sizeKb = Math.max(1, Math.round((file.size || 0) / 1024));
 
                     name.className = 'md-file-name';
                     name.textContent = file.name || 'file';
                     size.className = 'md-file-size';
                     size.textContent = sizeKb + ' ' + strings.sizeUnit;
+                    remove.className = 'md-file-remove';
+                    remove.type = 'button';
+                    remove.textContent = 'X';
+                    remove.setAttribute('data-index', String(index));
+                    remove.setAttribute('aria-label', strings.removeLabel);
+                    remove.title = strings.removeLabel;
 
                     item.appendChild(name);
                     item.appendChild(size);
+                    item.appendChild(remove);
                     list.appendChild(item);
                 });
+            };
+
+            var addFiles = function (newFiles) {
+                if (!newFiles || newFiles.length === 0) {
+                    return;
+                }
+                Array.prototype.slice.call(newFiles).forEach(function (file) {
+                    var exists = files.some(function (existing) {
+                        return sameFile(existing, file);
+                    });
+                    if (!exists) {
+                        files.push(file);
+                    }
+                });
+                syncInput();
+                renderFiles();
             };
 
             browse.addEventListener('click', function () {
@@ -304,7 +404,7 @@
             });
 
             input.addEventListener('change', function () {
-                renderFiles(input.files);
+                addFiles(input.files);
             });
 
             dropzone.addEventListener('dragover', function (event) {
@@ -322,14 +422,31 @@
                 dropzone.classList.remove('is-dragover');
 
                 if (event.dataTransfer && event.dataTransfer.files) {
-                    try {
-                        input.files = event.dataTransfer.files;
-                    } catch (error) {
-                        // Ignore if browser blocks assignment.
-                    }
-                    renderFiles(event.dataTransfer.files);
+                    addFiles(event.dataTransfer.files);
                 }
             });
+
+            list.addEventListener('click', function (event) {
+                var target = event.target;
+                if (!target || !target.classList.contains('md-file-remove')) {
+                    return;
+                }
+                var index = parseInt(target.getAttribute('data-index') || '', 10);
+                if (isNaN(index)) {
+                    return;
+                }
+                files.splice(index, 1);
+                syncInput();
+                renderFiles();
+            });
+
+            if (form && uploadStatus) {
+                form.addEventListener('submit', function () {
+                    uploadStatus.hidden = false;
+                });
+            }
+
+            renderFiles();
         })();
     </script>
 @endpush

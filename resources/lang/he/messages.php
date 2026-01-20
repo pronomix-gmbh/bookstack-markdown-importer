@@ -9,6 +9,8 @@ return [
     'dropzone_subtitle' => 'Markdown (.md/.markdown), טקסט (.txt), HTML (.html/.htm) או ארכיוני ZIP; אפשרות לריבוי קבצים',
     'dropzone_browse' => 'בחר קבצים',
     'dropzone_no_files' => 'לא נבחרו קבצים',
+    'dropzone_remove_label' => 'הסר קובץ',
+    'upload_in_progress' => 'העלאה מתבצעת...',
     'dropzone_more_files' => ':name + :count נוספים (:size :unit)',
     'size_unit_kb' => 'KB',
     'hint_max_size' => 'גודל העלאה מקסימלי: :size MB.',

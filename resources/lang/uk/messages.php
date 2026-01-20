@@ -9,6 +9,8 @@ return [
     'dropzone_subtitle' => 'Markdown (.md/.markdown), текст (.txt), HTML (.html/.htm) або ZIP-архіви; дозволено вибір кількох файлів',
     'dropzone_browse' => 'Вибрати файли',
     'dropzone_no_files' => 'Файли не вибрані',
+    'dropzone_remove_label' => 'Видалити файл',
+    'upload_in_progress' => 'Триває завантаження...',
     'dropzone_more_files' => ':name + :count ще (:size :unit)',
     'size_unit_kb' => 'KB',
     'hint_max_size' => 'Максимальний розмір завантаження: :size MB.',

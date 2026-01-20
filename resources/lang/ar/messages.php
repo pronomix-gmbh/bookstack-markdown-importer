@@ -9,6 +9,8 @@ return [
     'dropzone_subtitle' => 'Markdown (.md/.markdown)، نص (.txt)، HTML (.html/.htm) أو أرشيفات ZIP؛ اختيار متعدد مسموح',
     'dropzone_browse' => 'اختر الملفات',
     'dropzone_no_files' => 'لم يتم اختيار ملفات',
+    'dropzone_remove_label' => 'إزالة الملف',
+    'upload_in_progress' => 'جاري رفع الملفات...',
     'dropzone_more_files' => ':name + :count المزيد (:size :unit)',
     'size_unit_kb' => 'KB',
     'hint_max_size' => 'الحد الأقصى لحجم الرفع: :size ميغابايت.',

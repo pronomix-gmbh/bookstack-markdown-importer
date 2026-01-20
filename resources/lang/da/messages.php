@@ -9,6 +9,8 @@ return [
     'dropzone_subtitle' => 'Markdown (.md/.markdown), tekst (.txt), HTML (.html/.htm) eller ZIP-arkiver; multivalg tilladt',
     'dropzone_browse' => 'Vælg filer',
     'dropzone_no_files' => 'Ingen filer valgt',
+    'dropzone_remove_label' => 'Fjern fil',
+    'upload_in_progress' => 'Upload kører...',
     'dropzone_more_files' => ':name + :count flere (:size :unit)',
     'size_unit_kb' => 'KB',
     'hint_max_size' => 'Maksimal uploadstørrelse: :size MB.',

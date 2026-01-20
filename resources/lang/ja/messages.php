@@ -9,6 +9,8 @@ return [
     'dropzone_subtitle' => 'Markdown (.md/.markdown)、テキスト (.txt)、HTML (.html/.htm)、またはZIPアーカイブ。複数選択可',
     'dropzone_browse' => 'ファイルを選択',
     'dropzone_no_files' => 'ファイルが選択されていません',
+    'dropzone_remove_label' => 'ファイルを削除',
+    'upload_in_progress' => 'アップロード中…',
     'dropzone_more_files' => ':name + :count 件 (:size :unit)',
     'size_unit_kb' => 'KB',
     'hint_max_size' => '最大アップロードサイズ: :size MB。',

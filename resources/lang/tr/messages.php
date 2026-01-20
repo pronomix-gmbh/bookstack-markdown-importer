@@ -9,6 +9,8 @@ return [
     'dropzone_subtitle' => 'Markdown (.md/.markdown), metin (.txt), HTML (.html/.htm) veya ZIP arşivleri; çoklu seçim desteklenir',
     'dropzone_browse' => 'Dosya seç',
     'dropzone_no_files' => 'Dosya seçilmedi',
+    'dropzone_remove_label' => 'Dosyayı kaldır',
+    'upload_in_progress' => 'Yükleme sürüyor...',
     'dropzone_more_files' => ':name + :count adet daha (:size :unit)',
     'size_unit_kb' => 'KB',
     'hint_max_size' => 'Maksimum yükleme boyutu: :size MB.',

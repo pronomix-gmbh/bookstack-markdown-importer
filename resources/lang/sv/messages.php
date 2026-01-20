@@ -9,6 +9,8 @@ return [
     'dropzone_subtitle' => 'Markdown (.md/.markdown), text (.txt), HTML (.html/.htm) eller ZIP-arkiv; flera val tillåtna',
     'dropzone_browse' => 'Välj filer',
     'dropzone_no_files' => 'Inga filer valda',
+    'dropzone_remove_label' => 'Ta bort fil',
+    'upload_in_progress' => 'Uppladdning pågår...',
     'dropzone_more_files' => ':name + :count till (:size :unit)',
     'size_unit_kb' => 'KB',
     'hint_max_size' => 'Maximal uppladdningsstorlek: :size MB.',

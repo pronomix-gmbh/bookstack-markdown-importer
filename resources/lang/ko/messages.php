@@ -9,6 +9,8 @@ return [
     'dropzone_subtitle' => 'Markdown (.md/.markdown), 텍스트 (.txt), HTML (.html/.htm) 또는 ZIP 아카이브; 다중 선택 가능',
     'dropzone_browse' => '파일 선택',
     'dropzone_no_files' => '선택된 파일 없음',
+    'dropzone_remove_label' => '파일 제거',
+    'upload_in_progress' => '업로드 중...',
     'dropzone_more_files' => ':name + :count개 (:size :unit)',
     'size_unit_kb' => 'KB',
     'hint_max_size' => '최대 업로드 크기: :size MB.',

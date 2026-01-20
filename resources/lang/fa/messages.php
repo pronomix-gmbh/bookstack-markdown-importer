@@ -9,6 +9,8 @@ return [
     'dropzone_subtitle' => 'Markdown (.md/.markdown)، متن (.txt)، HTML (.html/.htm) یا آرشیو ZIP؛ انتخاب چندگانه مجاز است',
     'dropzone_browse' => 'انتخاب فایل‌ها',
     'dropzone_no_files' => 'هیچ فایلی انتخاب نشده است',
+    'dropzone_remove_label' => 'حذف فایل',
+    'upload_in_progress' => 'در حال بارگذاری...',
     'dropzone_more_files' => ':name + :count مورد دیگر (:size :unit)',
     'size_unit_kb' => 'KB',
     'hint_max_size' => 'حداکثر اندازه بارگذاری: :size MB.',

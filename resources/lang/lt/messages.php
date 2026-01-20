@@ -9,6 +9,8 @@ return [
     'dropzone_subtitle' => 'Markdown (.md/.markdown), tekstas (.txt), HTML (.html/.htm) arba ZIP archyvai; leidžiamas kelių failų pasirinkimas',
     'dropzone_browse' => 'Pasirinkti failus',
     'dropzone_no_files' => 'Nepasirinkta failų',
+    'dropzone_remove_label' => 'Pašalinti failą',
+    'upload_in_progress' => 'Įkeliama...',
     'dropzone_more_files' => ':name + :count daugiau (:size :unit)',
     'size_unit_kb' => 'KB',
     'hint_max_size' => 'Maksimalus įkėlimo dydis: :size MB.',

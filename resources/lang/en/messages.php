@@ -9,6 +9,8 @@ return [
     'dropzone_subtitle' => 'Markdown (.md/.markdown), text (.txt), HTML (.html/.htm), or ZIP archives; multiple selection allowed',
     'dropzone_browse' => 'Choose files',
     'dropzone_no_files' => 'No files selected',
+    'dropzone_remove_label' => 'Remove file',
+    'upload_in_progress' => 'Upload in progress...',
     'dropzone_more_files' => ':name + :count more (:size :unit)',
     'size_unit_kb' => 'KB',
     'hint_max_size' => 'Maximum upload size: :size MB.',

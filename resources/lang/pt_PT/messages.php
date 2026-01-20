@@ -9,6 +9,8 @@ return [
     'dropzone_subtitle' => 'Markdown (.md/.markdown), texto (.txt), HTML (.html/.htm) ou arquivos ZIP; seleção múltipla permitida',
     'dropzone_browse' => 'Escolher ficheiros',
     'dropzone_no_files' => 'Nenhum ficheiro selecionado',
+    'dropzone_remove_label' => 'Remover ficheiro',
+    'upload_in_progress' => 'A carregar...',
     'dropzone_more_files' => ':name + :count mais (:size :unit)',
     'size_unit_kb' => 'KB',
     'hint_max_size' => 'Tamanho máximo de upload: :size MB.',

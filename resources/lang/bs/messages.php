@@ -9,6 +9,8 @@ return [
     'dropzone_subtitle' => 'Markdown (.md/.markdown), tekst (.txt), HTML (.html/.htm) ili ZIP arhive; više datoteka dozvoljeno',
     'dropzone_browse' => 'Odaberite datoteke',
     'dropzone_no_files' => 'Nema odabranih datoteka',
+    'dropzone_remove_label' => 'Ukloni datoteku',
+    'upload_in_progress' => 'Otpremanje u toku...',
     'dropzone_more_files' => ':name + :count više (:size :unit)',
     'size_unit_kb' => 'KB',
     'hint_max_size' => 'Maksimalna veličina otpremanja: :size MB.',

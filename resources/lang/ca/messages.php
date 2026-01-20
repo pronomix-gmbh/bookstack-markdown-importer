@@ -9,6 +9,8 @@ return [
     'dropzone_subtitle' => 'Markdown (.md/.markdown), text (.txt), HTML (.html/.htm) o arxius ZIP; selecció múltiple permesa',
     'dropzone_browse' => 'Tria fitxers',
     'dropzone_no_files' => 'Cap fitxer seleccionat',
+    'dropzone_remove_label' => 'Elimina el fitxer',
+    'upload_in_progress' => 'S\'està pujant...',
     'dropzone_more_files' => ':name + :count més (:size :unit)',
     'size_unit_kb' => 'KB',
     'hint_max_size' => 'Mida màxima de pujada: :size MB.',

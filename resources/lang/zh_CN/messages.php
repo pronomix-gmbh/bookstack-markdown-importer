@@ -9,6 +9,8 @@ return [
     'dropzone_subtitle' => 'Markdown (.md/.markdown)、文本 (.txt)、HTML (.html/.htm) 或 ZIP 压缩包；支持多选',
     'dropzone_browse' => '选择文件',
     'dropzone_no_files' => '未选择文件',
+    'dropzone_remove_label' => '移除文件',
+    'upload_in_progress' => '正在上传…',
     'dropzone_more_files' => ':name + :count 个 (:size :unit)',
     'size_unit_kb' => 'KB',
     'hint_max_size' => '最大上传大小：:size MB。',

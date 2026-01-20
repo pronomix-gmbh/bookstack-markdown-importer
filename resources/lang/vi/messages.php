@@ -9,6 +9,8 @@ return [
     'dropzone_subtitle' => 'Markdown (.md/.markdown), văn bản (.txt), HTML (.html/.htm) hoặc ZIP; cho phép chọn nhiều',
     'dropzone_browse' => 'Chọn tệp',
     'dropzone_no_files' => 'Chưa chọn tệp',
+    'dropzone_remove_label' => 'Xóa tệp',
+    'upload_in_progress' => 'Đang tải lên...',
     'dropzone_more_files' => ':name + :count thêm (:size :unit)',
     'size_unit_kb' => 'KB',
     'hint_max_size' => 'Kích thước tải lên tối đa: :size MB.',
