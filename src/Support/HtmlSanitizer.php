@@ -108,6 +108,7 @@ class HtmlSanitizer
         $definition->addElement('main', 'Block', 'Flow', 'Common');
         $definition->addElement('figure', 'Block', 'Flow', 'Common');
         $definition->addElement('figcaption', 'Block', 'Flow', 'Common');
+        $definition->addElement('mark', 'Inline', 'Inline', 'Common');
     }
 
     public function sanitize(string $html): string
