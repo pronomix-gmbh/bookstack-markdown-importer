@@ -2,5 +2,5 @@
    class="icon-list-item"
    data-import-markdown="1">
     <span>@icon('file')</span>
-    <span>Import Markdown</span>
+    <span>{{ trans('bookstack-markdown-importer::messages.action_import') }}</span>
 </a>

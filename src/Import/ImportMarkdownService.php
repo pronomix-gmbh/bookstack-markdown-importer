@@ -8,6 +8,7 @@ use BookStack\Entities\Repos\ChapterRepo;
 use BookStack\Entities\Repos\PageRepo;
 use BookStackMarkdownImporter\Support\ContainerNameIndex;
 use BookStackMarkdownImporter\Support\HtmlSanitizer;
+use BookStackMarkdownImporter\Support\HtmlTitleExtractor;
 use BookStackMarkdownImporter\Support\MarkdownConverter;
 use BookStackMarkdownImporter\Support\MarkdownTitleExtractor;
 use BookStackMarkdownImporter\Support\NameCollisionResolver;
@@ -28,6 +29,7 @@ class ImportMarkdownService
         protected MarkdownTitleExtractor $titleExtractor,
         protected MarkdownConverter $markdownConverter,
         protected HtmlSanitizer $htmlSanitizer,
+        protected HtmlTitleExtractor $htmlTitleExtractor,
         protected ZipMarkdownReader $zipReader,
         protected ZipPathPlanner $zipPlanner,
         protected NameCollisionResolver $nameResolver
@@ -36,30 +38,58 @@ class ImportMarkdownService
 
     public function import(Book $book, UploadedFile $file, bool $createChaptersFromFolders): ImportResult
     {
+        return $this->importFiles($book, [$file], $createChaptersFromFolders);
+    }
+
+    /**
+     * @param UploadedFile[] $files
+     */
+    public function importFiles(Book $book, array $files, bool $createChaptersFromFolders): ImportResult
+    {
         $result = new ImportResult();
         $nameIndex = new ContainerNameIndex();
-        $chapterMap = [];
+        $chapterMap = $this->loadExistingChapters($book);
 
-        $extension = strtolower($file->getClientOriginalExtension());
+        foreach ($files as $file) {
+            if (!$file instanceof UploadedFile) {
+                continue;
+            }
+
+            $this->importSingleFile($book, $file, $createChaptersFromFolders, $nameIndex, $chapterMap, $result);
+        }
+
+        return $result;
+    }
+
+    /**
+     * @param array<string, Chapter> $chapterMap
+     */
+    protected function importSingleFile(Book $book, UploadedFile $file, bool $createChaptersFromFolders, ContainerNameIndex $nameIndex, array &$chapterMap, ImportResult $result): void
+    {
+        $extension = $this->detectExtension($file);
         $uuid = (string) Str::uuid();
         $relativeDir = 'tmp/imports/' . $uuid;
         $fileName = 'upload' . ($extension ? '.' . $extension : '');
+        $displayName = $file->getClientOriginalName() ?: trans('bookstack-markdown-importer::messages.uploaded_file');
 
         File::ensureDirectoryExists(storage_path('app/' . $relativeDir));
-        $relativePath = $file->storeAs($relativeDir, $fileName, 'local');
-        if (!$relativePath) {
-            throw new ImportException('Failed to store uploaded file.');
-        }
-        $disk = Storage::disk('local');
-        if (!$disk->exists($relativePath)) {
-            throw new ImportException('Uploaded file could not be stored on the server.');
-        }
-        $fullPath = $disk->path($relativePath);
 
         try {
+            $relativePath = $file->storeAs($relativeDir, $fileName, 'local');
+            if (!$relativePath) {
+                throw new ImportException(trans('bookstack-markdown-importer::messages.error_store_failed'));
+            }
+
+            $disk = Storage::disk('local');
+            if (!$disk->exists($relativePath)) {
+                throw new ImportException(trans('bookstack-markdown-importer::messages.error_store_missing'));
+            }
+
+            $fullPath = $disk->path($relativePath);
+
             if ($extension === 'zip') {
                 if (!config('bookstack-markdown-importer.allow_zip', true)) {
-                    throw new ImportException('ZIP imports are disabled.');
+                    throw new ImportException(trans('bookstack-markdown-importer::messages.error_zip_disabled', ['name' => $displayName]));
                 }
 
                 $maxUploadMb = (int) config('bookstack-markdown-importer.max_upload_mb', 20);
@@ -67,7 +97,7 @@ class ImportMarkdownService
 
                 $entries = $this->zipReader->read($fullPath, $maxBytes);
                 if (count($entries) === 0) {
-                    throw new ImportException('No Markdown files were found in the ZIP.');
+                    throw new ImportException(trans('bookstack-markdown-importer::messages.error_zip_no_files'));
                 }
 
                 $plan = $this->zipPlanner->plan(array_keys($entries), $createChaptersFromFolders);
@@ -80,29 +110,42 @@ class ImportMarkdownService
                     $container = $book;
                     $chapterName = $item['chapter'];
                     if ($chapterName !== null) {
-                        $chapter = $chapterMap[$chapterName] ?? null;
-                        if ($chapter === null) {
-                            $chapter = $this->createChapter($book, $chapterName, $nameIndex, $result);
-                            $chapterMap[$chapterName] = $chapter;
-                        }
-                        $container = $chapter;
+                        $container = $this->getOrCreateChapter($book, $chapterName, $nameIndex, $chapterMap, $result);
                     }
 
                     $this->importMarkdownContent($container, $path, $entries[$path], $nameIndex, $result);
                 }
+            } elseif (in_array($extension, ['html', 'htm'], true)) {
+                try {
+                    $rawHtml = File::get($fullPath);
+                } catch (Throwable) {
+                    throw new ImportException(trans('bookstack-markdown-importer::messages.error_html_read'));
+                }
+
+                $sanitizedHtml = $this->htmlSanitizer->sanitize($rawHtml);
+                $extracted = $this->htmlTitleExtractor->extract($sanitizedHtml);
+                $title = $extracted['title'] ?: $this->defaultTitleFromPath($displayName);
+                $html = $extracted['html'];
+
+                $this->createPage($book, $title, $html, $nameIndex);
+                $result->pagesCreated++;
             } else {
                 try {
                     $contents = File::get($fullPath);
                 } catch (Throwable) {
-                    throw new ImportException('Unable to read uploaded Markdown file.');
+                    throw new ImportException(trans('bookstack-markdown-importer::messages.error_file_read'));
                 }
-                $this->importMarkdownContent($book, $file->getClientOriginalName(), $contents, $nameIndex, $result);
+                $this->importMarkdownContent($book, $displayName, $contents, $nameIndex, $result);
             }
+        } catch (Throwable $exception) {
+            Log::warning('Datei-Import fehlgeschlagen', [
+                'name' => $displayName,
+                'error' => $exception->getMessage(),
+            ]);
+            $result->addFailure($displayName, $exception->getMessage());
         } finally {
             File::deleteDirectory(storage_path('app/' . $relativeDir));
         }
-
-        return $result;
     }
 
     protected function importMarkdownContent(Book|Chapter $container, string $path, string $contents, ContainerNameIndex $nameIndex, ImportResult $result): void
@@ -120,7 +163,7 @@ class ImportMarkdownService
             $this->createPage($container, $title, $html, $nameIndex);
             $result->pagesCreated++;
         } catch (Throwable $exception) {
-            Log::warning('Markdown import entry failed', [
+            Log::warning('Inhalt konnte nicht importiert werden', [
                 'path' => $path,
                 'error' => $exception->getMessage(),
             ]);
@@ -138,7 +181,7 @@ class ImportMarkdownService
         $this->pageRepo->publishDraft($draft, [
             'name' => $uniqueName,
             'html' => $html,
-            'summary' => 'Imported from Markdown',
+            'summary' => trans('bookstack-markdown-importer::messages.summary_imported'),
         ]);
 
         $nameIndex->addPageName($container, $uniqueName);
@@ -157,10 +200,53 @@ class ImportMarkdownService
         return $chapter;
     }
 
+    /**
+     * @param array<string, Chapter> $chapterMap
+     */
+    protected function getOrCreateChapter(Book $book, string $name, ContainerNameIndex $nameIndex, array &$chapterMap, ImportResult $result): Chapter
+    {
+        $key = strtolower($name);
+        if (isset($chapterMap[$key])) {
+            return $chapterMap[$key];
+        }
+
+        $chapter = $this->createChapter($book, $name, $nameIndex, $result);
+        $chapterMap[$key] = $chapter;
+
+        return $chapter;
+    }
+
+    /**
+     * @return array<string, Chapter>
+     */
+    protected function loadExistingChapters(Book $book): array
+    {
+        $map = [];
+        $chapters = $book->chapters()->get(['id', 'name']);
+        foreach ($chapters as $chapter) {
+            $map[strtolower($chapter->name)] = $chapter;
+        }
+
+        return $map;
+    }
+
+    protected function detectExtension(UploadedFile $file): string
+    {
+        $extension = strtolower($file->getClientOriginalExtension());
+        if ($extension === '') {
+            $extension = strtolower($file->guessExtension() ?? '');
+        }
+        if ($extension === '') {
+            $extension = strtolower(pathinfo($file->getClientOriginalName() ?: '', PATHINFO_EXTENSION));
+        }
+
+        return $extension;
+    }
+
     protected function defaultTitleFromPath(string $path): string
     {
         $base = pathinfo($path, PATHINFO_FILENAME);
-        return $base !== '' ? $base : 'Untitled';
+        return $base !== '' ? $base : trans('bookstack-markdown-importer::messages.default_title');
     }
 
     protected function normalizeMarkdown(string $contents): string

@@ -13,7 +13,7 @@ class ZipMarkdownReader
     public function read(string $zipPath, int $maxTotalBytes): array
     {
         if (!class_exists(ZipArchive::class)) {
-            throw new ImportException('ZIP support is not available. Please enable the PHP zip extension.');
+            throw new ImportException(trans('bookstack-markdown-importer::messages.error_zip_support_missing'));
         }
 
         $zip = new ZipArchive();
@@ -59,7 +59,7 @@ class ZipMarkdownReader
             $totalBytes += $size;
             if ($totalBytes > $maxTotalBytes) {
                 $zip->close();
-                throw new ImportException('ZIP contents exceed the maximum allowed size.');
+                throw new ImportException(trans('bookstack-markdown-importer::messages.error_zip_too_large'));
             }
 
             $contents = $zip->getFromIndex($i);
@@ -78,17 +78,16 @@ class ZipMarkdownReader
     protected function formatOpenError(int $errorCode): string
     {
         $map = [
-            ZipArchive::ER_INCONS => 'ZIP archive is inconsistent.',
-            ZipArchive::ER_INVAL => 'ZIP archive has an invalid argument.',
-            ZipArchive::ER_MEMORY => 'ZIP archive could not be opened due to memory limits.',
-            ZipArchive::ER_NOENT => 'ZIP archive file could not be found.',
-            ZipArchive::ER_NOZIP => 'Uploaded file is not a valid ZIP archive.',
-            ZipArchive::ER_OPEN => 'ZIP archive could not be opened.',
-            ZipArchive::ER_READ => 'ZIP archive could not be read.',
-            ZipArchive::ER_SEEK => 'ZIP archive could not be read (seek error).',
+            ZipArchive::ER_INCONS => trans('bookstack-markdown-importer::messages.zip_error_inconsistent'),
+            ZipArchive::ER_INVAL => trans('bookstack-markdown-importer::messages.zip_error_invalid'),
+            ZipArchive::ER_MEMORY => trans('bookstack-markdown-importer::messages.zip_error_memory'),
+            ZipArchive::ER_NOENT => trans('bookstack-markdown-importer::messages.zip_error_noent'),
+            ZipArchive::ER_NOZIP => trans('bookstack-markdown-importer::messages.zip_error_nozip'),
+            ZipArchive::ER_OPEN => trans('bookstack-markdown-importer::messages.zip_error_open'),
+            ZipArchive::ER_READ => trans('bookstack-markdown-importer::messages.zip_error_read'),
+            ZipArchive::ER_SEEK => trans('bookstack-markdown-importer::messages.zip_error_seek'),
         ];
 
-        $message = $map[$errorCode] ?? 'Unable to open ZIP file.';
-        return $message;
+        return $map[$errorCode] ?? trans('bookstack-markdown-importer::messages.error_zip_open');
     }
 }

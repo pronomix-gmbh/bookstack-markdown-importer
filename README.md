@@ -1,52 +1,52 @@
-# BookStack Markdown Importer
+# BookStack Markdown-Importer
 
-Import Markdown files into BookStack books, including bulk ZIP uploads with optional chapter creation based on folder structure.
+Importiert Markdown-, Text- und HTML-Dateien in BookStack-Buecher, inklusive ZIP-Upload mit optionaler Kapitel-Erstellung anhand der Ordnerstruktur.
 
-## Requirements
+## Voraussetzungen
 
 - BookStack v23+ (Laravel 10/11/12)
 - PHP 8.2+
-- PHP extensions: `zip`, `mbstring`, `dom`
+- PHP-Erweiterungen: `zip`, `mbstring`, `dom`
 
 ## Installation
 
-1) Install the package:
+1) Paket installieren:
 
 ```bash
-composer require pronomix-gmbh/bookstack-markdown-importer
+composer require pronomix/bookstack-markdown-importer
 ```
 
-2) Service provider registration:
+2) Service-Provider registrieren:
 
-- If auto-discovery is enabled (default in BookStack), no action is required.
-- If auto-discovery is disabled, add the provider to `config/app.php`:
+- Wenn Auto-Discovery aktiv ist (Standard in BookStack), ist kein Schritt noetig.
+- Wenn Auto-Discovery deaktiviert ist, Provider in `config/app.php` eintragen:
 
 ```php
 BookStackMarkdownImporter\ServiceProvider::class,
 ```
 
-3) Publish configuration (optional):
+3) Konfiguration veroeffentlichen (optional):
 
 ```bash
 php artisan vendor:publish --tag=bookstack-markdown-importer-config
 ```
 
-4) Clear caches:
+4) Caches leeren:
 
 ```bash
 php artisan cache:clear
 php artisan view:clear
 ```
 
-## Configuration
+## Konfiguration
 
-Config file: `config/bookstack-markdown-importer.php`
+Datei: `config/bookstack-markdown-importer.php`
 
-- `max_upload_mb` (int): Maximum upload size in MB.
-- `allow_zip` (bool): Allow ZIP uploads containing multiple Markdown files.
-- `create_chapters_from_folders_default` (bool): Default state for the "Create chapters from folders" checkbox.
+- `max_upload_mb` (int): Maximale Upload-Groesse in MB.
+- `allow_zip` (bool): ZIP-Uploads mit mehreren Dateien erlauben.
+- `create_chapters_from_folders_default` (bool): Standardwert fuer "Kapitel aus Ordnern erstellen".
 
-Example:
+Beispiel:
 
 ```php
 return [
@@ -56,7 +56,7 @@ return [
 ];
 ```
 
-You can also set the values via environment variables:
+Alternativ per Umgebungsvariablen:
 
 ```
 BOOKSTACK_MD_IMPORT_MAX_UPLOAD_MB=20
@@ -64,57 +64,58 @@ BOOKSTACK_MD_IMPORT_ALLOW_ZIP=true
 BOOKSTACK_MD_IMPORT_CREATE_CHAPTERS_DEFAULT=true
 ```
 
-## Usage
+## Nutzung
 
-1) Open a book in BookStack.
-2) Click **Import Markdown** in the book actions menu.
-3) Upload a `.md` file or a `.zip` containing multiple `.md` files.
-4) Optionally check **Create chapters from folders** for ZIP imports.
-5) Submit to import pages. A summary is shown via flash messages.
+1) Buch in BookStack oeffnen.
+2) **Import** im Buch-Aktionsmenue anklicken.
+3) Eine `.md`, `.markdown`, `.txt`, `.html`, `.htm` oder eine `.zip` hochladen.
+4) Optional **Kapitel aus Ordnern erstellen** fuer ZIP-Import aktivieren.
+5) Import absenden; eine Zusammenfassung erscheint als Flash-Nachricht.
 
-Screenshot placeholders:
+Screenshots:
 
-- `docs/screenshots/book-action.png`
-- `docs/screenshots/import-form.png`
-- `docs/screenshots/import-result.png`
+![Book action menu](docs/screenshots/book-action.png)
+![Import form](docs/screenshots/import-form.png)
+![Import result](docs/screenshots/import-result.png)
 
-## Behavior Details
+## Verhalten im Detail
 
-- Single `.md` upload creates one page in the selected book.
-- `.zip` uploads create multiple pages in alphabetical path order.
-- Top-level ZIP folders become chapters (when enabled). Deeper folders are ignored for chapter naming, but files remain ordered by full path.
-- Page title defaults to filename (without extension). If the first Markdown heading is `# Title`, it becomes the page title and is removed from the body.
-- If a page name already exists in the same container (book or chapter), a numeric suffix is added: `My Page (2)`, `My Page (3)`, etc.
+- Einzelne `.md`/`.txt`/`.html`-Datei erzeugt eine Seite im ausgewaehlten Buch.
+- Mehrere Dateien koennen gleichzeitig hochgeladen werden; sie werden nacheinander verarbeitet.
+- `.zip`-Uploads erzeugen mehrere Seiten in alphabetischer Pfad-Reihenfolge.
+- Ordner auf oberster Ebene werden zu Kapiteln (falls aktiviert). Existiert ein Kapitel mit gleichem Namen bereits, wird es verwendet.
+- Der Seitentitel ist standardmaessig der Dateiname (ohne Endung). Wenn die erste Markdown-Ueberschrift `# Titel` existiert, wird diese als Titel verwendet und aus dem Inhalt entfernt. Bei HTML wird die erste `<h1>` als Titel verwendet und entfernt.
+- Bei Namenskollisionen wird numerisch erhoeht: `Meine Seite (2)`, `Meine Seite (3)` usw.
 
-## Security Notes
+## Sicherheitshinweise
 
-- CSRF-protected form and authenticated routes.
-- Permissions: Only users who can update the book and create pages can import. Chapter creation requires chapter create permission.
-- Server-side validation of file type and size.
-- Markdown is converted to HTML server-side using `league/commonmark` and sanitized with `HTMLPurifier`.
-- ZIP handling uses PHP `ZipArchive` with safe-path checks; no external binaries are required.
+- CSRF-geschuetztes Formular und authentifizierte Routen.
+- Berechtigungen: Nur Nutzer mit Buch-Bearbeitungsrecht und Seiten-Erstellrecht koennen importieren. Kapitel-Erstellung erfordert Kapitel-Erstellrecht.
+- Serverseitige Validierung von Dateityp und Groesse.
+- Markdown wird serverseitig mit `league/commonmark` in HTML konvertiert und mit `HTMLPurifier` bereinigt.
+- ZIP-Verarbeitung nutzt PHP `ZipArchive` und sichere Pfad-Pruefungen; keine externen Binaries erforderlich.
 
-## Uninstall
+## Deinstallation
 
-1) Remove the package:
+1) Paket entfernen:
 
 ```bash
-composer remove pronomix-gmbh/bookstack-markdown-importer
+composer remove pronomix/bookstack-markdown-importer
 ```
 
-2) Remove config file (if published):
+2) Konfigurationsdatei loeschen (falls veroeffentlicht):
 
 ```
 config/bookstack-markdown-importer.php
 ```
 
-3) Clear caches:
+3) Caches leeren:
 
 ```bash
 php artisan cache:clear
 php artisan view:clear
 ```
 
-## License
+## Lizenz
 
 MIT

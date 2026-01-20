@@ -24,6 +24,7 @@ class ServiceProvider extends BaseServiceProvider
     public function boot(): void
     {
         $this->loadViewsFrom(__DIR__ . '/../resources/views', 'bookstack-markdown-importer');
+        $this->loadTranslationsFrom(__DIR__ . '/../resources/lang', 'bookstack-markdown-importer');
 
         $this->publishes([
             __DIR__ . '/../config/bookstack-markdown-importer.php' => config_path('bookstack-markdown-importer.php'),

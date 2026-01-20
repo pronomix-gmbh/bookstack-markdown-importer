@@ -25,7 +25,7 @@ class ImportMarkdownController extends Controller
         $this->checkOwnablePermission(Permission::BookUpdate, $bookModel, $bookModel->getUrl());
         $this->checkOwnablePermission(Permission::PageCreate, $bookModel, $bookModel->getUrl());
 
-        $this->setPageTitle('Import Markdown');
+        $this->setPageTitle(trans('bookstack-markdown-importer::messages.import'));
 
         return view('bookstack-markdown-importer::import', [
             'book' => $bookModel,
@@ -44,36 +44,66 @@ class ImportMarkdownController extends Controller
         $maxUploadKb = max(1, $maxUploadMb * 1024);
 
         $request->validate([
-            'file' => 'required|file|max:' . $maxUploadKb,
+            'file' => 'required|array',
+            'file.*' => 'file|max:' . $maxUploadKb,
         ]);
 
-        $extension = strtolower($request->file('file')->getClientOriginalExtension());
-        if ($extension === '') {
-            $extension = strtolower($request->file('file')->guessExtension() ?? '');
+        $filesInput = $request->file('file');
+        $files = is_array($filesInput) ? $filesInput : [$filesInput];
+        $validFiles = [];
+        $validationErrors = [];
+
+        foreach ($files as $file) {
+            if (!$file) {
+                continue;
+            }
+
+            if (!$file->isValid()) {
+                $validationErrors[] = trans('bookstack-markdown-importer::messages.error_upload_failed');
+                continue;
+            }
+
+            $extension = strtolower($file->getClientOriginalExtension());
+            if ($extension === '') {
+                $extension = strtolower($file->guessExtension() ?? '');
+            }
+
+            $displayName = $file->getClientOriginalName() ?: trans('bookstack-markdown-importer::messages.uploaded_file');
+            if (!in_array($extension, ['md', 'markdown', 'txt', 'html', 'htm', 'zip'], true)) {
+                $validationErrors[] = trans('bookstack-markdown-importer::messages.error_invalid_type', ['name' => $displayName]);
+                continue;
+            }
+
+            if ($extension === 'zip' && !$allowZip) {
+                $validationErrors[] = trans('bookstack-markdown-importer::messages.error_zip_disabled', ['name' => $displayName]);
+                continue;
+            }
+
+            $validFiles[] = $file;
         }
 
-        if (!in_array($extension, ['md', 'markdown', 'zip'], true)) {
+        if (count($validationErrors) > 0) {
             return redirect($bookModel->getUrl('/markdown-import'))
                 ->withInput($request->except('file'))
-                ->withErrors(['file' => 'Only Markdown (.md/.markdown) and ZIP files are supported.']);
+                ->withErrors($validationErrors);
         }
 
-        if ($extension === 'zip' && !$allowZip) {
+        if (count($validFiles) === 0) {
             return redirect($bookModel->getUrl('/markdown-import'))
                 ->withInput($request->except('file'))
-                ->withErrors(['file' => 'ZIP imports are disabled by configuration.']);
+                ->withErrors([trans('bookstack-markdown-importer::messages.error_no_valid_files')]);
         }
 
         $createChapters = $request->boolean('create_chapters', (bool) config('bookstack-markdown-importer.create_chapters_from_folders_default', true));
         if ($createChapters && !userCan(Permission::ChapterCreate, $bookModel)) {
             $createChapters = false;
-            session()->flash('warning', 'You do not have permission to create chapters. Pages will be imported into the book root.');
+            session()->flash('warning', trans('bookstack-markdown-importer::messages.warning_no_chapter_permission'));
         }
 
         try {
-            $result = $this->importer->import($bookModel, $request->file('file'), $createChapters);
+            $result = $this->importer->importFiles($bookModel, $validFiles, $createChapters);
         } catch (ImportException $exception) {
-            Log::warning('Markdown import failed', [
+            Log::warning('Import fehlgeschlagen', [
                 'user_id' => user()->id ?? null,
                 'book_id' => $bookModel->id,
                 'message' => $exception->getMessage(),
@@ -85,22 +115,28 @@ class ImportMarkdownController extends Controller
         }
 
         $summaryParts = [
-            sprintf('%d page(s) created', $result->pagesCreated),
+            trans_choice('bookstack-markdown-importer::messages.summary_pages', $result->pagesCreated, ['count' => $result->pagesCreated]),
         ];
         if ($result->chaptersCreated > 0) {
-            $summaryParts[] = sprintf('%d chapter(s) created', $result->chaptersCreated);
+            $summaryParts[] = trans_choice('bookstack-markdown-importer::messages.summary_chapters', $result->chaptersCreated, ['count' => $result->chaptersCreated]);
         }
 
-        $successMessage = 'Import complete: ' . implode(', ', $summaryParts) . '.';
+        $successMessage = trans('bookstack-markdown-importer::messages.success_complete', [
+            'summary' => implode(', ', $summaryParts),
+        ]);
         session()->flash('success', $successMessage);
 
         if ($result->hasFailures()) {
             $preview = implode('; ', array_slice($result->failures, 0, 6));
-            $suffix = count($result->failures) > 6 ? ' and more.' : '.';
-            session()->flash('warning', 'Some files failed to import: ' . $preview . $suffix);
+            $suffix = count($result->failures) > 6
+                ? ' ' . trans('bookstack-markdown-importer::messages.and_more') . '.'
+                : '.';
+            session()->flash('warning', trans('bookstack-markdown-importer::messages.warning_partial', [
+                'details' => $preview . $suffix,
+            ]));
         }
 
-        Log::info('Markdown import completed', [
+        Log::info('Import abgeschlossen', [
             'user_id' => user()->id ?? null,
             'book_id' => $bookModel->id,
             'pages_created' => $result->pagesCreated,
