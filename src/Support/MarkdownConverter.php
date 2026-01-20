@@ -33,6 +33,10 @@ class MarkdownConverter
             $environment = $customEnvironment;
         }
 
+        if (method_exists($environment, 'mergeConfig')) {
+            $environment->mergeConfig($config);
+        }
+
         $this->converter = new LeagueMarkdownConverter($environment);
     }
 
