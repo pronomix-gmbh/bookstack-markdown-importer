@@ -16,10 +16,6 @@ class ZipMarkdownReader
             throw new ImportException('ZIP support is not available. Please enable the PHP zip extension.');
         }
 
-        if (!is_file($zipPath)) {
-            throw new ImportException('ZIP file could not be found on the server.');
-        }
-
         $zip = new ZipArchive();
         $opened = $zip->open($zipPath);
         if ($opened !== true) {

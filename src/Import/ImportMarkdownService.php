@@ -16,6 +16,7 @@ use BookStackMarkdownImporter\Support\ZipPathPlanner;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Throwable;
 
@@ -49,7 +50,11 @@ class ImportMarkdownService
         if (!$relativePath) {
             throw new ImportException('Failed to store uploaded file.');
         }
-        $fullPath = storage_path('app/' . $relativePath);
+        $disk = Storage::disk('local');
+        if (!$disk->exists($relativePath)) {
+            throw new ImportException('Uploaded file could not be stored on the server.');
+        }
+        $fullPath = $disk->path($relativePath);
 
         try {
             if ($extension === 'zip') {

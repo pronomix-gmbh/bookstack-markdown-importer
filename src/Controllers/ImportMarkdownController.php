@@ -43,18 +43,19 @@ class ImportMarkdownController extends Controller
         $maxUploadMb = (int) config('bookstack-markdown-importer.max_upload_mb', 20);
         $maxUploadKb = max(1, $maxUploadMb * 1024);
 
-        $allowedExtensions = $allowZip
-            ? 'md,markdown,zip'
-            : 'md,markdown';
         $request->validate([
-            'file' => 'required|file|max:' . $maxUploadKb . '|mimes:' . $allowedExtensions,
+            'file' => 'required|file|max:' . $maxUploadKb,
         ]);
 
         $extension = strtolower($request->file('file')->getClientOriginalExtension());
+        if ($extension === '') {
+            $extension = strtolower($request->file('file')->guessExtension() ?? '');
+        }
+
         if (!in_array($extension, ['md', 'markdown', 'zip'], true)) {
             return redirect($bookModel->getUrl('/markdown-import'))
                 ->withInput($request->except('file'))
-                ->withErrors(['file' => 'Only Markdown (.md) and ZIP files are supported.']);
+                ->withErrors(['file' => 'Only Markdown (.md/.markdown) and ZIP files are supported.']);
         }
 
         if ($extension === 'zip' && !$allowZip) {
