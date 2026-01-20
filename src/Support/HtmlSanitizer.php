@@ -54,7 +54,6 @@ class HtmlSanitizer
         $cachePath = storage_path('app/tmp/htmlpurifier');
         File::ensureDirectoryExists($cachePath);
         $config->set('Cache.SerializerPath', $cachePath);
-        $this->configureHtml5Definitions($config);
 
         $config->set('HTML.Allowed', implode(',', [
             'p', 'div', 'br', 'hr',
@@ -80,6 +79,7 @@ class HtmlSanitizer
         $config->set('Attr.AllowedClasses', []);
         $config->set('Attr.EnableID', false);
 
+        $this->configureHtml5Definitions($config);
         $this->purifier = new HTMLPurifier($config);
     }
 
