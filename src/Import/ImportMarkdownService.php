@@ -113,7 +113,7 @@ class ImportMarkdownService
                         $container = $this->getOrCreateChapter($book, $chapterName, $nameIndex, $chapterMap, $result);
                     }
 
-                    $this->importMarkdownContent($container, $path, $entries[$path], $nameIndex, $result);
+                    $this->importZipContent($container, $path, $entries[$path], $nameIndex, $result);
                 }
             } elseif (in_array($extension, ['html', 'htm'], true)) {
                 try {
@@ -122,13 +122,7 @@ class ImportMarkdownService
                     throw new ImportException(trans('bookstack-markdown-importer::messages.error_html_read'));
                 }
 
-                $sanitizedHtml = $this->htmlSanitizer->sanitize($rawHtml);
-                $extracted = $this->htmlTitleExtractor->extract($sanitizedHtml);
-                $title = $extracted['title'] ?: $this->defaultTitleFromPath($displayName);
-                $html = $extracted['html'];
-
-                $this->createPage($book, $title, $html, $nameIndex);
-                $result->pagesCreated++;
+                $this->importHtmlContent($book, $displayName, $rawHtml, $nameIndex, $result);
             } else {
                 try {
                     $contents = File::get($fullPath);
@@ -169,6 +163,36 @@ class ImportMarkdownService
             ]);
             $result->addFailure($path, $exception->getMessage());
         }
+    }
+
+    protected function importHtmlContent(Book|Chapter $container, string $path, string $contents, ContainerNameIndex $nameIndex, ImportResult $result): void
+    {
+        try {
+            $sanitizedHtml = $this->htmlSanitizer->sanitize($contents);
+            $extracted = $this->htmlTitleExtractor->extract($sanitizedHtml);
+            $title = $extracted['title'] ?: $this->defaultTitleFromPath($path);
+            $html = $extracted['html'];
+
+            $this->createPage($container, $title, $html, $nameIndex);
+            $result->pagesCreated++;
+        } catch (Throwable $exception) {
+            Log::warning('HTML-Inhalt konnte nicht importiert werden', [
+                'path' => $path,
+                'error' => $exception->getMessage(),
+            ]);
+            $result->addFailure($path, $exception->getMessage());
+        }
+    }
+
+    protected function importZipContent(Book|Chapter $container, string $path, string $contents, ContainerNameIndex $nameIndex, ImportResult $result): void
+    {
+        $extension = strtolower(pathinfo($path, PATHINFO_EXTENSION));
+        if (in_array($extension, ['html', 'htm'], true)) {
+            $this->importHtmlContent($container, $path, $contents, $nameIndex, $result);
+            return;
+        }
+
+        $this->importMarkdownContent($container, $path, $contents, $nameIndex, $result);
     }
 
     protected function createPage(Book|Chapter $container, string $title, string $html, ContainerNameIndex $nameIndex): void

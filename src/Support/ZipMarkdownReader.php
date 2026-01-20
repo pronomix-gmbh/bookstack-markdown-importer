@@ -51,7 +51,7 @@ class ZipMarkdownReader
             }
 
             $extension = strtolower(pathinfo($name, PATHINFO_EXTENSION));
-            if (!in_array($extension, ['md', 'markdown'], true)) {
+            if (!in_array($extension, ['md', 'markdown', 'txt', 'html', 'htm'], true)) {
                 continue;
             }
 
