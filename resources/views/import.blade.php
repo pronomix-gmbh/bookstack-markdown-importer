@@ -11,7 +11,7 @@
             padding: 16px 18px;
             margin-bottom: 16px;
             border-radius: 6px;
-            background: linear-gradient(135deg, rgba(30, 86, 49, 0.08), rgba(30, 86, 49, 0.02));
+            background: #fff;
             border: 1px solid rgba(30, 86, 49, 0.14);
         }
 
@@ -25,6 +25,7 @@
 
         .md-dropzone {
             position: relative;
+            width: 100%;
             border: 1px dashed rgba(0, 0, 0, 0.3);
             border-radius: 8px;
             padding: 16px;
@@ -127,6 +128,7 @@
         }
 
         .md-import-info {
+            width: 100%;
             padding: 12px 14px;
             border-radius: 6px;
             background: rgba(0, 0, 0, 0.02);
@@ -245,7 +247,7 @@
 @stop
 
 @push('body-end')
-    <script>
+    <script nonce="{{ $cspNonce ?? '' }}">
         (function () {
             var dropzone = document.getElementById('md-import-dropzone');
             var input = document.getElementById('markdown-file');
