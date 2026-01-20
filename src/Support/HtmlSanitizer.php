@@ -151,6 +151,7 @@ class HtmlSanitizer
             libxml_use_internal_errors($internalErrors);
             return $html;
         }
+        $this->removeProcessingInstructions($doc);
 
         $xpath = new DOMXPath($doc);
         $nodes = $xpath->query('//*');
@@ -178,7 +179,7 @@ class HtmlSanitizer
             }
         }
 
-        $output = $this->getInnerHtml($doc);
+        $output = $this->stripXmlDeclaration($this->getInnerHtml($doc));
         libxml_use_internal_errors($internalErrors);
 
         return $output;
@@ -240,5 +241,23 @@ class HtmlSanitizer
         }
 
         return $html;
+    }
+
+    protected function removeProcessingInstructions(DOMDocument $doc): void
+    {
+        $nodes = [];
+        foreach ($doc->childNodes as $child) {
+            $nodes[] = $child;
+        }
+        foreach ($nodes as $child) {
+            if ($child->nodeType === XML_PI_NODE) {
+                $doc->removeChild($child);
+            }
+        }
+    }
+
+    protected function stripXmlDeclaration(string $html): string
+    {
+        return preg_replace('/^<\\?xml[^>]*\\?>/i', '', $html) ?? $html;
     }
 }

@@ -25,6 +25,7 @@ class HtmlTitleExtractor
             libxml_use_internal_errors($internalErrors);
             return ['title' => null, 'html' => $html];
         }
+        $this->removeProcessingInstructions($doc);
 
         $xpath = new DOMXPath($doc);
         $title = null;
@@ -39,10 +40,28 @@ class HtmlTitleExtractor
             }
         }
 
-        $htmlOutput = $this->getInnerHtml($doc);
+        $htmlOutput = $this->stripXmlDeclaration($this->getInnerHtml($doc));
         libxml_use_internal_errors($internalErrors);
 
         return ['title' => $title ?: null, 'html' => $htmlOutput];
+    }
+
+    protected function removeProcessingInstructions(DOMDocument $doc): void
+    {
+        $nodes = [];
+        foreach ($doc->childNodes as $child) {
+            $nodes[] = $child;
+        }
+        foreach ($nodes as $child) {
+            if ($child->nodeType === XML_PI_NODE) {
+                $doc->removeChild($child);
+            }
+        }
+    }
+
+    protected function stripXmlDeclaration(string $html): string
+    {
+        return preg_replace('/^<\\?xml[^>]*\\?>/i', '', $html) ?? $html;
     }
 
     protected function normalizeEncoding(string $html): string
