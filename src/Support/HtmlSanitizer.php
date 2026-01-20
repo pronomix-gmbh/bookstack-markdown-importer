@@ -54,6 +54,7 @@ class HtmlSanitizer
         $cachePath = storage_path('app/tmp/htmlpurifier');
         File::ensureDirectoryExists($cachePath);
         $config->set('Cache.SerializerPath', $cachePath);
+        $config->set('Core.Encoding', 'UTF-8');
 
         $config->set('HTML.Allowed', implode(',', [
             'p', 'div', 'br', 'hr',
@@ -113,6 +114,7 @@ class HtmlSanitizer
 
     public function sanitize(string $html): string
     {
+        $html = $this->normalizeEncoding($html);
         $html = $this->normalizeTags($html);
         $html = $this->unwrapUnsupportedTags($html);
         return $this->purifier->purify($html);
@@ -144,7 +146,7 @@ class HtmlSanitizer
 
         $internalErrors = libxml_use_internal_errors(true);
         $doc = new DOMDocument('1.0', 'UTF-8');
-        $loaded = $doc->loadHTML($html, LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD);
+        $loaded = $doc->loadHTML('<?xml encoding="UTF-8">' . $html, LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD);
         if ($loaded === false) {
             libxml_use_internal_errors($internalErrors);
             return $html;
@@ -180,6 +182,15 @@ class HtmlSanitizer
         libxml_use_internal_errors($internalErrors);
 
         return $output;
+    }
+
+    protected function normalizeEncoding(string $html): string
+    {
+        if (function_exists('mb_convert_encoding')) {
+            return mb_convert_encoding($html, 'UTF-8', 'UTF-8');
+        }
+
+        return $html;
     }
 
     protected function unwrapNode(\DOMNode $node): void

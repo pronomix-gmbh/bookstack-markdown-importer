@@ -16,9 +16,10 @@ class HtmlTitleExtractor
             return ['title' => null, 'html' => $html];
         }
 
+        $html = $this->normalizeEncoding($html);
         $internalErrors = libxml_use_internal_errors(true);
         $doc = new DOMDocument('1.0', 'UTF-8');
-        $loaded = $doc->loadHTML($html, LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD);
+        $loaded = $doc->loadHTML('<?xml encoding="UTF-8">' . $html, LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD);
 
         if ($loaded === false) {
             libxml_use_internal_errors($internalErrors);
@@ -42,6 +43,15 @@ class HtmlTitleExtractor
         libxml_use_internal_errors($internalErrors);
 
         return ['title' => $title ?: null, 'html' => $htmlOutput];
+    }
+
+    protected function normalizeEncoding(string $html): string
+    {
+        if (function_exists('mb_convert_encoding')) {
+            return mb_convert_encoding($html, 'UTF-8', 'UTF-8');
+        }
+
+        return $html;
     }
 
     protected function getInnerHtml(DOMDocument $doc): string
