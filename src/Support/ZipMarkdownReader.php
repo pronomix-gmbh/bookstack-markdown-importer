@@ -12,10 +12,18 @@ class ZipMarkdownReader
      */
     public function read(string $zipPath, int $maxTotalBytes): array
     {
+        if (!class_exists(ZipArchive::class)) {
+            throw new ImportException('ZIP support is not available. Please enable the PHP zip extension.');
+        }
+
+        if (!is_file($zipPath)) {
+            throw new ImportException('ZIP file could not be found on the server.');
+        }
+
         $zip = new ZipArchive();
         $opened = $zip->open($zipPath);
         if ($opened !== true) {
-            throw new ImportException('Unable to open ZIP file.');
+            throw new ImportException($this->formatOpenError($opened));
         }
 
         $entries = [];
@@ -69,5 +77,22 @@ class ZipMarkdownReader
         $zip->close();
 
         return $entries;
+    }
+
+    protected function formatOpenError(int $errorCode): string
+    {
+        $map = [
+            ZipArchive::ER_INCONS => 'ZIP archive is inconsistent.',
+            ZipArchive::ER_INVAL => 'ZIP archive has an invalid argument.',
+            ZipArchive::ER_MEMORY => 'ZIP archive could not be opened due to memory limits.',
+            ZipArchive::ER_NOENT => 'ZIP archive file could not be found.',
+            ZipArchive::ER_NOZIP => 'Uploaded file is not a valid ZIP archive.',
+            ZipArchive::ER_OPEN => 'ZIP archive could not be opened.',
+            ZipArchive::ER_READ => 'ZIP archive could not be read.',
+            ZipArchive::ER_SEEK => 'ZIP archive could not be read (seek error).',
+        ];
+
+        $message = $map[$errorCode] ?? 'Unable to open ZIP file.';
+        return $message;
     }
 }

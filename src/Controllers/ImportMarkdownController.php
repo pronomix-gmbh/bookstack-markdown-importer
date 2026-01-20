@@ -43,11 +43,11 @@ class ImportMarkdownController extends Controller
         $maxUploadMb = (int) config('bookstack-markdown-importer.max_upload_mb', 20);
         $maxUploadKb = max(1, $maxUploadMb * 1024);
 
-        $allowedMimeTypes = $allowZip
-            ? 'text/markdown,text/plain,application/zip'
-            : 'text/markdown,text/plain';
+        $allowedExtensions = $allowZip
+            ? 'md,markdown,zip'
+            : 'md,markdown';
         $request->validate([
-            'file' => 'required|file|max:' . $maxUploadKb . '|mimetypes:' . $allowedMimeTypes,
+            'file' => 'required|file|max:' . $maxUploadKb . '|mimes:' . $allowedExtensions,
         ]);
 
         $extension = strtolower($request->file('file')->getClientOriginalExtension());
